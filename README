@@ -3,3 +3,15 @@ Diploma thesis
 
 The topic of the thesis is "Towards a Faster FFT-Accelerated Full-Wave Solver
 and Its Integration into Shape Optimization Strategies".
+
+Building
+--------
+
+Requires make and tectonic (https://tectonic-typesetting.github.io).
+
+* Build everything: make
+* Build the thesis: make thesis
+* Build the assignment: make assigment
+* Remove the outputs: make clean
+
+Each PDF is written to out/<assigment|thesis>/main.pdf.
