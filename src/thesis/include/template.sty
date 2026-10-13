@@ -1,44 +1,123 @@
 %%
 %% template
 %%
+%% Preamble of the thesis. Requires XeLaTeX or LuaLaTeX (tectonic uses XeTeX).
+%% Load it right after \documentclass; page geometry and PDF metadata belong
+%% in main.tex. Works with both chapter-based (report, book) and section-based
+%% (article) classes.
+%%
 
 
 %
-% basic packages and settings
+% language and fonts
 %
 
 
-% font settings
-\usepackage[Symbol]{upgreek}
-\usepackage[greek,english]{babel}
-\usepackage{fontspec}
+% babel first, main language last
+\RequirePackage[czech,main=english]{babel}
 
-% packages for tikz
-\usepackage{tikz}
-\usepackage{tikz-cd}
-\usepackage{pgfplots}
+% amsmath and mathtools must precede unicode-math
+\RequirePackage{amsmath}
+\RequirePackage{mathtools}
+\RequirePackage{amsthm}
+\RequirePackage{unicode-math}
+
+% integral limits above and below in display style (amsmath's intlimits
+% option is ignored by unicode-math); must precede \setmathfont
+\removenolimits{\int\iint\iiint\iiiint\oint\oiint\oiiint}
+
+% New Computer Modern, the OpenType successor of Computer/Latin Modern
+\setmainfont{NewCM10}[
+    Extension      = .otf,
+    UprightFont    = *-Regular,
+    BoldFont       = *-Bold,
+    ItalicFont     = *-Italic,
+    BoldItalicFont = *-BoldItalic,
+]
+\setsansfont{NewCMSans10}[
+    Extension      = .otf,
+    UprightFont    = *-Regular,
+    BoldFont       = *-Bold,
+    ItalicFont     = *-Oblique,
+    BoldItalicFont = *-BoldOblique,
+]
+\setmonofont{NewCMMono10}[
+    Extension      = .otf,
+    UprightFont    = *-Regular,
+    BoldFont       = *-Bold,
+    ItalicFont     = *-Italic,
+    BoldItalicFont = *-BoldOblique,
+]
+\setmathfont{NewCMMath-Regular.otf}
+
+% character protrusion (margin kerning)
+\RequirePackage{microtype}
+
+% quotation marks: \enquote{...}
+\RequirePackage[autostyle]{csquotes}
+
+
+%
+% general packages
+%
+
+
+% graphics
+\RequirePackage{graphicx}
+\RequirePackage{xcolor}
+\RequirePackage{tikz}
+\RequirePackage{tikz-cd}
+\RequirePackage{pgfplots}
 \pgfplotsset{compat=1.18}
 
-% algorithms
-\usepackage{algpseudocode}
-\usepackage{setspace}
+% floats and captions
+\RequirePackage{float}
+\RequirePackage{placeins}
+\RequirePackage{subcaption}
 
-% hyperref
-\usepackage[colorlinks]{hyperref}
+% tables
+\RequirePackage{booktabs}
+\RequirePackage{makecell}
+\RequirePackage{multirow}
+
+% lists; shortlabels keeps the enumerate-package syntax, e.g. [(a)]
+\RequirePackage[shortlabels]{enumitem}
+
+% line spacing
+\RequirePackage{setspace}
+
+% physical quantities and units: \qty{3}{\giga\hertz}, \unit{\ohm}
+\RequirePackage{siunitx}
+
+% derivatives: \odv{f}{x}, \pdv{f}{x,y}, \odif{x}
+\RequirePackage{derivative}
+
+% spacing after \ie, \eg, \cf
+\RequirePackage{xspace}
+
+% hyperref goes after the packages above and before cleveref and algorithm
+\RequirePackage[psdextra]{hyperref} % psdextra: math (\alpha, ...) in bookmarks
 \hypersetup{
     colorlinks=true, % false: boxed links; true: colored links
     linkcolor=blue!70!black, % color of internal links
     citecolor=red!70!black, % color of links to bibliography
     filecolor=blue!70!black, % color of file links
     urlcolor=blue!70!black, % color of external links
+    bookmarksnumbered=true,
 }
 
+% algorithms: algorithm float + algpseudocode (algorithmicx) environment
+\RequirePackage{algorithm}
+\RequirePackage{algpseudocode}
+
+% references with automatic names: \cref{thm:main} -> "Theorem 2.1"
+\RequirePackage[capitalise,nameinlink]{cleveref}
+
 % custom elmag colors
-\RequirePackage{xcolor}
-\definecolor{elmagGay}{RGB}{245, 245, 245}
+\definecolor{elmagGray}{RGB}{245, 245, 245}
 \definecolor{PairedA}{RGB}{166, 206, 227}
 \definecolor{PairedB}{RGB}{ 31, 120, 180}
-\definecolor{PairedC}{RGB}{178, 223, 138} 
+\definecolor{PairedC}{RGB}{178, 223, 138}
 \definecolor{PairedD}{RGB}{ 41, 128,  35}
 \definecolor{PairedE}{RGB}{251, 154, 153}
 \definecolor{PairedF}{RGB}{182,  21,  22}
@@ -51,161 +130,206 @@
 
 
 %
-% math
+% typesetting penalties
 %
 
-
-% packages
-\RequirePackage[cmex10,intlimits]{amsmath}
-\RequirePackage{physics}
-\RequirePackage{amsfonts}
-\RequirePackage{amssymb}
-\RequirePackage{mathtools}
-\RequirePackage{booktabs}
-\RequirePackage{makecell}
-\RequirePackage{multirow}
-\RequirePackage{enumerate}
-\RequirePackage{placeins}
-\RequirePackage{mathdesign}
-\RequirePackage{float}
-\RequirePackage{csquotes}
 
 % for avoiding \mbox{} everywhere...
 \relpenalty=10000
 \binoppenalty=10000
 
-% avid singletons
+% avoid singletons
 \widowpenalty=10000
 \clubpenalty=10000
+\displaywidowpenalty=10000
+
+
+%
+% theorems
+%
+% All environments share one counter, numbered within chapters (or sections
+% in classes without chapters). Use the optional argument for a title and
+% \label inside the environment:
+%
+%   \begin{theorem}[Parseval]\label{thm:parseval} ... \end{theorem}
+%   \begin{proof} ... \end{proof}
+%   ... by \cref{thm:parseval} ...
+%
+
+
+\@ifundefined{c@chapter}
+    {\newtheorem{theorem}{Theorem}[section]%
+     \numberwithin{equation}{section}%
+     \numberwithin{algorithm}{section}}
+    {\newtheorem{theorem}{Theorem}[chapter]%
+     \numberwithin{equation}{chapter}%
+     \numberwithin{algorithm}{chapter}}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\newtheorem{example}[theorem]{Example}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\theoremstyle{plain}
+
+% proofs: \begin{proof} ... \end{proof} ends with an open square; put
+% \qedhere at the end of a final display to keep the square on its line
+
+
+%
+% math
+%
+
+
+% paired delimiters: \abs{x} natural size, \abs*{x} auto-sized,
+% \abs[\big]{x} manual size
+\DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
+\DeclarePairedDelimiter{\norm}{\lVert}{\rVert}
+\DeclarePairedDelimiterX{\inner}[2]{\langle}{\rangle}{#1, #2}
+
+% operators
+\DeclareMathOperator{\RE}{Re} % real part of...
+\DeclareMathOperator{\IM}{Im} % imaginary part of...
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\spn}{span}
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
 
 % basic constants, and math objects
-\providecommand{\I}{\ensuremath{\mathrm{i}}} % imaginary unit
-\providecommand{\RE}{\ensuremath{\mathrm{Re}}} % real part of...
-\providecommand{\IM}{\ensuremath{\mathrm{Im}}} % imaginary part of...
-\providecommand{\Quot}[1]{``{#1}"} % quotation
-\providecommand{\D}{\,\mathrm{d}} % d for integral
-\providecommand{\V}[1]{\vb*{#1}} % vector
-\providecommand{\M}[1]{\mathbf{#1}} % matrix
-\providecommand{\T}[1]{\vb*{\mathcal{#1}}} % tensor
-%\providecommand{\T}[1]{\mathrm{#1}} % upright text (subindex, superindex,..)
-\providecommand{\UV}[1]{\V{\hat{#1}}} % unit vector
-\providecommand{\NORM}[1]{\left\| #1 \right\|} % norm
-\providecommand{\ABS}[1]{\left| #1 \right|} % absolute value
-\providecommand{\OP}[1]{{\mathcal{#1}}} % operator
-\providecommand{\R}{\mathbb{R}}
-\providecommand{\N}{\mathbb{N}}
-\providecommand{\Z}{\mathbb{Z}}
-\providecommand{\C}{\mathbb{C}}
-\providecommand{\herm}{\mathrm{H}} 
-\providecommand{\trans}{\mathrm{T}}
-\providecommand{\mySubj}{\mathrm{subj.}}
+\newcommand*{\I}{\ensuremath{\mathrm{i}}} % imaginary unit
+\newcommand*{\Quot}[1]{\enquote{#1}} % quotation
+\newcommand*{\D}{\mathop{}\!\mathrm{d}} % d for integral
+% the outer braces keep brace-less sub/superscripts working: E_\V{x}, R_\T{in}
+\newcommand*{\V}[1]{{\symbfit{#1}}} % vector
+\newcommand*{\M}[1]{{\symbfup{#1}}} % matrix
+\newcommand*{\TEN}[1]{{\symbfcal{#1}}} % tensor
+\newcommand*{\T}[1]{{\mathrm{#1}}} % upright text (subindex, superindex,..)
+\newcommand*{\UV}[1]{\hat{\V{#1}}} % unit vector
+\newcommand*{\NORM}[1]{\norm*{#1}} % auto-sized norm
+\newcommand*{\ABS}[1]{\abs*{#1}} % auto-sized absolute value
+\newcommand*{\OP}[1]{\mathcal{#1}} % operator
+\newcommand*{\R}{\mathbb{R}}
+\newcommand*{\N}{\mathbb{N}}
+\newcommand*{\Z}{\mathbb{Z}}
+\newcommand*{\C}{\mathbb{C}}
+\newcommand*{\herm}{\mathrm{H}}
+\newcommand*{\trans}{\mathrm{T}}
+\newcommand*{\mySubj}{\mathrm{subj.}}
 
 % smaller version of a math symbol
-\providecommand{\smallmathcal}[1]{
+\newcommand*{\smallmathcal}[1]{%
     \mathchoice
-    {{\scriptstyle\mathcal{#1}}} % \displaystyle
-    {{\scriptstyle\mathcal{#1}}} % \textstyle
-    {{\scriptscriptstyle\mathcal{#1}}} % \scriptstyle
-    {\scalebox{.7}{$\scriptscriptstyle\mathcal{#1}$}} %\scriptscriptstyle
+    {{\scriptstyle\mathcal{#1}}}% \displaystyle
+    {{\scriptstyle\mathcal{#1}}}% \textstyle
+    {{\scriptscriptstyle\mathcal{#1}}}% \scriptstyle
+    {\scalebox{.7}{$\scriptscriptstyle\mathcal{#1}$}}% \scriptscriptstyle
 }
 
-
 % Bessels, Neumann, Hankel functions
-\providecommand{\JBSL}[2]{\mathrm{j}_{#1} \left( #2 \right)}  
-\providecommand{\YBSL}[2]{\mathrm{y}_{#1} \left( #2 \right)}
-\providecommand{\HBSL}[3]{\mathrm{h}_{#1}^{(#2)} \left( #3 \right)}
+\newcommand*{\JBSL}[2]{\mathrm{j}_{#1} \left( #2 \right)}
+\newcommand*{\YBSL}[2]{\mathrm{y}_{#1} \left( #2 \right)}
+\newcommand*{\HBSL}[3]{\mathrm{h}_{#1}^{(#2)} \left( #3 \right)}
 
 % spherical waves
-\providecommand{\UFCN}[3]{\M{u}_{#1}^{\left( #2 \right)} \left(#3\right)}
-\providecommand{\RFCN}[3]{\mathrm{R}_{#1}^{\left( #2 \right)} \left(#3\right)}
-\providecommand{\YFCN}[2]{\M{Y}_{#1}\left(#2\right)}
-\providecommand{\YFCNs}[2]{\mathrm{Y}_{#1}\left(#2\right)}
-\providecommand{\AFCN}[2]{\M{A}_{#1}\left(#2\right)}
-\providecommand{\PFCNn}[3]{\tilde{\mathrm{P}}_{#1}^{#2}\left(#3\right)}
+\newcommand*{\UFCN}[3]{\M{u}_{#1}^{\left( #2 \right)} \left(#3\right)}
+\newcommand*{\RFCN}[3]{\mathrm{R}_{#1}^{\left( #2 \right)} \left(#3\right)}
+\newcommand*{\YFCN}[2]{\M{Y}_{#1}\left(#2\right)}
+\newcommand*{\YFCNs}[2]{\mathrm{Y}_{#1}\left(#2\right)}
+\newcommand*{\AFCN}[2]{\M{A}_{#1}\left(#2\right)}
+\newcommand*{\PFCNn}[3]{\tilde{\mathrm{P}}_{#1}^{#2}\left(#3\right)}
 
 % constants (keep them as LaTeX variables)
-\providecommand*{\EPS}{\ensuremath{\varepsilon_0}} % permittivity
-\providecommand*{\MUE}{\ensuremath{\mu_0}} % permeability
-\providecommand*{\SIGMA}{\ensuremath{\sigma}} % conductivity
-\providecommand{\ZVAC}{\ensuremath{Z_0}} % impedance of vacuum
-\providecommand*{\KZ}{\ensuremath{k_0}} % wave number
+\newcommand*{\EPS}{\ensuremath{\varepsilon_0}} % permittivity
+\newcommand*{\MUE}{\ensuremath{\mu_0}} % permeability
+\newcommand*{\SIGMA}{\ensuremath{\sigma}} % conductivity
+\newcommand*{\ZVAC}{\ensuremath{Z_0}} % impedance of vacuum
+\newcommand*{\KZ}{\ensuremath{k_0}} % wave number
 
 % geometry, basis functions
-\providecommand{\srcRegion}{\ensuremath{\varOmega}} 
-\providecommand{\basisFcn}{\V{\psi}}
-\providecommand{\BFpol}{\chi}
-\providecommand{\Ivec}{\ensuremath{\M{I}}}
-\providecommand{\Vvec}{\ensuremath{\M{V}}}
-\providecommand{\Fvec}{\ensuremath{\M{F}}}
-\providecommand{\Mvec}{\ensuremath{\M{m}}}
-\providecommand{\Pvec}{\ensuremath{\M{p}}}
-\providecommand{\Eveci}{\ensuremath{\V{E}_\T{i}}}
-\providecommand{\Evecs}{\ensuremath{\V{E}_\T{s}}}
-\providecommand{\zvecL}{\ensuremath{\V{z}_\T{L}}}
-\providecommand{\vvec}{\ensuremath{\V{v}}}
-\providecommand{\yvec}{\ensuremath{\M{y}}}
-\providecommand{\Jvec}{\ensuremath{\V{J}}}
+\newcommand*{\srcRegion}{\ensuremath{\symit{\Omega}}}
+\newcommand*{\basisFcn}{\ensuremath{\V{\psi}}}
+\newcommand*{\BFpol}{\ensuremath{\chi}}
+\newcommand*{\Ivec}{\ensuremath{\M{I}}}
+\newcommand*{\Vvec}{\ensuremath{\M{V}}}
+\newcommand*{\Fvec}{\ensuremath{\M{F}}}
+\newcommand*{\Mvec}{\ensuremath{\M{m}}}
+\newcommand*{\Pvec}{\ensuremath{\M{p}}}
+\newcommand*{\Eveci}{\ensuremath{\V{E}_\T{i}}}
+\newcommand*{\Evecs}{\ensuremath{\V{E}_\T{s}}}
+\newcommand*{\zvecL}{\ensuremath{\V{z}_\T{L}}}
+\newcommand*{\vvec}{\ensuremath{\V{v}}}
+\newcommand*{\yvec}{\ensuremath{\M{y}}}
+\newcommand*{\Jvec}{\ensuremath{\V{J}}}
 
 % matrix operators
-\providecommand{\BFmat}{\ensuremath{\V{\Psi}}}
-\providecommand{\Rmat}{\ensuremath{\M{R}}}
-\providecommand{\Lmat}{\ensuremath{\M{L}}}
-\providecommand{\Xmat}{\ensuremath{\M{X}}}
-\providecommand{\Zmat}{\ensuremath{\M{Z}}}
-\providecommand{\ZmatE}{\ensuremath{\M{Z}_{\text{e}}}}
-\providecommand{\ZmatM}{\ensuremath{\M{Z}}_{\text{m}}}
-\providecommand{\RmatFS}{\ensuremath{\M{R}_\M{G}}}
-\providecommand{\XmatFS}{\ensuremath{\M{X}_\M{G}}}
-\providecommand{\ZmatFS}{\ensuremath{\M{Z}_\M{G}}}
-\providecommand{\YmatFS}{\ensuremath{\M{Y}_\M{G}}}
-\providecommand{\ZmatL}{\ensuremath{\M{Z}_\T{L}}}
-\providecommand{\Ymat}{\ensuremath{\M{Y}}}
-\providecommand{\Smat}{\ensuremath{\M{S}}}
-\providecommand{\Umat}{\ensuremath{\M{U}}}
-\providecommand{\XEmat}{\ensuremath{\M{X}_\T{e}}}
-\providecommand{\XMmat}{\ensuremath{\M{X}_\T{m}}}
-\providecommand{\XDmat}{\ensuremath{\M{X}'}}
-\providecommand{\Wmat}{\ensuremath{\M{W}}}
-\providecommand{\Cmat}{\ensuremath{\M{C}}}
-\providecommand{\Imat}{\ensuremath{\M{I}}}
+\newcommand*{\BFmat}{\ensuremath{\V{\Psi}}}
+\newcommand*{\Rmat}{\ensuremath{\M{R}}}
+\newcommand*{\Lmat}{\ensuremath{\M{L}}}
+\newcommand*{\Xmat}{\ensuremath{\M{X}}}
+\newcommand*{\Zmat}{\ensuremath{\M{Z}}}
+\newcommand*{\ZmatE}{\ensuremath{\M{Z}_\T{e}}}
+\newcommand*{\ZmatM}{\ensuremath{\M{Z}_\T{m}}}
+\newcommand*{\RmatFS}{\ensuremath{\M{R}_\M{G}}}
+\newcommand*{\XmatFS}{\ensuremath{\M{X}_\M{G}}}
+\newcommand*{\ZmatFS}{\ensuremath{\M{Z}_\M{G}}}
+\newcommand*{\YmatFS}{\ensuremath{\M{Y}_\M{G}}}
+\newcommand*{\ZmatL}{\ensuremath{\M{Z}_\T{L}}}
+\newcommand*{\Ymat}{\ensuremath{\M{Y}}}
+\newcommand*{\Smat}{\ensuremath{\M{S}}}
+\newcommand*{\Umat}{\ensuremath{\M{U}}}
+\newcommand*{\XEmat}{\ensuremath{\M{X}_\T{e}}}
+\newcommand*{\XMmat}{\ensuremath{\M{X}_\T{m}}}
+\newcommand*{\XDmat}{\ensuremath{\M{X}'}}
+\newcommand*{\Wmat}{\ensuremath{\M{W}}}
+\newcommand*{\Cmat}{\ensuremath{\M{C}}}
+\newcommand*{\Imat}{\ensuremath{\M{I}}}
 
 % input impedance-related paramters
-\providecommand{\Rin}{\ensuremath{R_\T{in}}}
-\providecommand{\Xin}{\ensuremath{X_\T{in}}}
-\providecommand{\Zin}{\ensuremath{Z_\T{in}}}
+\newcommand*{\Rin}{\ensuremath{R_\T{in}}}
+\newcommand*{\Xin}{\ensuremath{X_\T{in}}}
+\newcommand*{\Zin}{\ensuremath{Z_\T{in}}}
 
 % antenna parameters
-\providecommand{\surfres}{R_\T{s}}
-\providecommand{\radeff}{\eta}
-\providecommand{\dissipfact}{\delta}
-\providecommand{\Prad}{P_\T{rad}}
-\providecommand{\Preact}{P_\T{react}}
-\providecommand{\Plost}{P_\T{lost}}
-\providecommand{\Wrad}{\ensuremath{W_\mathrm{rad}}}
-\providecommand{\Wsto}{\ensuremath{W_\mathrm{sto}}}
-\providecommand{\We}{\ensuremath{W_\mathrm{e}}}
-\providecommand{\Wm}{\ensuremath{W_\mathrm{m}}}
+\newcommand*{\surfres}{\ensuremath{R_\T{s}}}
+\newcommand*{\radeff}{\ensuremath{\eta}}
+\newcommand*{\dissipfact}{\ensuremath{\delta}}
+\newcommand*{\Prad}{\ensuremath{P_\T{rad}}}
+\newcommand*{\Preact}{\ensuremath{P_\T{react}}}
+\newcommand*{\Plost}{\ensuremath{P_\T{lost}}}
+\newcommand*{\Wrad}{\ensuremath{W_\T{rad}}}
+\newcommand*{\Wsto}{\ensuremath{W_\T{sto}}}
+\newcommand*{\We}{\ensuremath{W_\T{e}}}
+\newcommand*{\Wm}{\ensuremath{W_\T{m}}}
 
-% units
-\providecommand{\Ohm}{\Omega}
+% units; prefer siunitx: \unit{\ohm}, \qty{50}{\ohm}
+\newcommand*{\Ohm}{\ensuremath{\Omega}}
 
 % bizzare math expressions
-\providecommand{\RR}{\|\V{r} - \V{r}'\|}
-\providecommand{\XX}{\|\V{x} - \V{x}'\|}
-\providecommand{\GFE}{\mathrm{e}^{-\I\KZ\RR}}
-\providecommand{\PSII}{\V{\Psi}_i}
-\providecommand{\PSIJ}{\V{\Psi}_j}
-\providecommand{\PSIM}{\V{\Psi}_{\V{m}}}
-\providecommand{\PSIN}{\V{\Psi}_{\V{n}}}
-\providecommand{\DFT}{\mathrm{DFT}}
-\providecommand{\xdir}{\mathrm{x}}
-\providecommand{\ydir}{\mathrm{y}}
-\providecommand{\zdir}{\mathrm{z}}
+\newcommand*{\RR}{\norm{\V{r} - \V{r}'}}
+\newcommand*{\XX}{\norm{\V{x} - \V{x}'}}
+\newcommand*{\GFE}{\mathrm{e}^{-\I\KZ\RR}}
+\newcommand*{\PSII}{\V{\Psi}_i}
+\newcommand*{\PSIJ}{\V{\Psi}_j}
+\newcommand*{\PSIM}{\V{\Psi}_{\V{m}}}
+\newcommand*{\PSIN}{\V{\Psi}_{\V{n}}}
+\newcommand*{\DFT}{\mathrm{DFT}}
+\newcommand*{\xdir}{\mathrm{x}}
+\newcommand*{\ydir}{\mathrm{y}}
+\newcommand*{\zdir}{\mathrm{z}}
 
 % style
-\newcommand{\ie}{\textit{i}.\textit{e}.{}} 
-\newcommand{\eg}{\textit{e}.\textit{g}.{}}
-\newcommand{\cf}{\textit{cf}.{}}
+\newcommand*{\ie}{\textit{i}.\textit{e}.\@\xspace}
+\newcommand*{\eg}{\textit{e}.\textit{g}.\@\xspace}
+\newcommand*{\cf}{\textit{cf}.\@\xspace}
 
 % acronyms
 \RequirePackage[nolist]{acronym}
@@ -221,91 +345,3 @@
 \newacro{RWG}[RWG]{Rao-Wilton-Glisson}
 \newacro{EM}[EM]{electromagnetic}
 \newacro{dof}[d-o-f]{\mbox{degrees-of-freedom}}
-
-
-%
-% commands for custom titles
-%
-
-% entry
-\newcounter{entry}[subsection]
-\newcommand{\entryTitle}[2] {%
-    \refstepcounter{entry}%
-    \label{entry:#2}%
-    \vspace{\baselineskip}
-    \noindent\textbf{Entry \thesection.\arabic{entry} (#1).}%
-}
-
-
-% proposition
-\newcounter{prop}[subsection]
-\newcommand{\propTitle}[2] {%
-    \refstepcounter{prop}%
-    \label{prop:#2}%
-    \vspace{\baselineskip}
-    \noindent\textbf{Proposition \thesection.\arabic{prop} (#1).}%
-}
-
-% corollary
-\newcounter{coro}[subsection]
-\newcommand{\coroTitle}[2] {%
-    \refstepcounter{coro}%
-    \label{coro:#2}%
-    \vspace{\baselineskip}
-    \noindent\textbf{Corollary \thesection.\arabic{coro} (#1).}%
-}
-
-
-% theorem
-\newcounter{theo}[subsection]
-\newcommand{\theoTitle}[2] {%
-    \refstepcounter{theo}%
-    \label{theo:#2}%
-    \vspace{\baselineskip}
-    \noindent\textbf{Theorem \thesection.\arabic{theo} (#1).}%
-}
-
-
-% lemma
-\newcounter{lemma}[subsection]
-\newcommand{\lemmaTitle}[2] {%
-    \refstepcounter{lemma}%
-    \label{lemma:#2}%
-    \vspace{\baselineskip}
-    \noindent\textbf{Lemma \thesection.\arabic{lemma} (#1).}%
-}
-
-
-% definition
-\newcounter{def}[subsection]
-\newcommand{\defTitle}[2] {%
-    \refstepcounter{def}%
-    \label{def:#2}%
-    \vspace{\baselineskip}
-    \noindent\textbf{Definition \thesection.\arabic{def} (#1).}%
-}
-
-\renewcommand{\theentry}{\thesection.\arabic{entry}}
-\renewcommand{\theprop}{\thesection.\arabic{prop}}
-\renewcommand{\thecoro}{\thesection.\arabic{coro}}
-\renewcommand{\thetheo}{\thesection.\arabic{theo}}
-\renewcommand{\thelemma}{\thesection.\arabic{lemma}}
-\renewcommand{\thedef}{\thesection.\arabic{def}}
-
-\newcommand{\entryRef}[1]{(\hyperref[entry:#1]{\ref*{entry:#1}})}
-\newcommand{\propRef}[1]{(\hyperref[prop:#1]{\ref*{prop:#1}})}
-\newcommand{\coroRef}[1]{(\hyperref[coro:#1]{\ref*{coro:#1}})}
-\newcommand{\theoRef}[1]{(\hyperref[theo:#1]{\ref*{theo:#1}})}
-\newcommand{\lemmaRef}[1]{(\hyperref[lemma:#1]{\ref*{lemma:#1}})}
-\newcommand{\defRef}[1]{(\hyperref[def:#1]{\ref*{def:#1}})}
-
-%
-% commands for additional features
-%
-
-
-% proof title
-\newcommand{\proof} {\noindent\textit{Proof.}\quad}
-
-% end of the proof
-\newcommand{\qed} {\hfill$\square$}

@@ -1,31 +1,33 @@
 \begin{titlepage}
-    \begin{center}
-        \hspace{0pt} \\
-        \vspace{5em}
+    \centering
+    % equal space above and below keeps the content vertically centered;
+    % TeX already puts \topskip above the first line, and \nointerlineskip
+    % stops it from adding the usual line spacing there
+    \vspace*{\dimexpr 20mm - \topskip\relax}
+    \nointerlineskip
 
-        {\large\bfseries Diploma Thesis\par}
+    {\large\bfseries Diploma Thesis\par}
 
-        \vspace{1em}
+    \vspace{3mm}
 
-        {\LARGE\bfseries
-            Towards a Faster FFT-Accelerated \\
-            Full-Wave Solver and Its Integration \\
-            into Shape Optimization Strategies\par}
+    {\LARGE\bfseries
+        Towards a Faster FFT-Accelerated \\
+        Full-Wave Solver and Its Integration \\
+        into Shape Optimization Strategies\par}
 
-        \vspace{10em}
+    \vspace{15mm}
 
-        \begin{tabular*}{0.8\textwidth}{@{}l@{\extracolsep{\fill}}r@{}}
-            \textbf{Author:} & \textbf{Supervisor:} \\[0.4em]
-            \textbf{Tom\'{a}\v{s} Mach\'{a}\v{c}ek} & \textbf{prof.\ Ing.\ Miloslav \v{C}apek, Ph.D.} \\
-        \end{tabular*}
+    \begin{tabular*}{0.8\textwidth}{@{}l@{\extracolsep{\fill}}r@{}}
+        \textbf{Author:} & \textbf{Supervisor:} \\[1.5mm]
+        \textbf{Tom\'{a}\v{s} Mach\'{a}\v{c}ek} & \textbf{prof.\ Ing.\ Miloslav \v{C}apek, Ph.D.} \\
+    \end{tabular*}
 
-        \vfill
+    \vfill
 
-        CTU in Prague\\
-        Czech Republic\\
-        \today
+    CTU in Prague\\
+    Czech Republic\\
+    \today
 
-        \vspace{1cm}
-    \end{center}
+    \vspace{20mm}
 \end{titlepage}
 
