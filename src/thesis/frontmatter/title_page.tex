@@ -1,3 +1,6 @@
+% titlepage resets the page counter, so the next page is numbered 1 as
+% well; no page anchor here avoids a duplicate hyperref anchor page.1
+\hypersetup{pageanchor=false}
 \begin{titlepage}
     \centering
     % equal space above and below keeps the content vertically centered;
@@ -30,4 +33,4 @@
 
     \vspace{20mm}
 \end{titlepage}
-
+\hypersetup{pageanchor=true}

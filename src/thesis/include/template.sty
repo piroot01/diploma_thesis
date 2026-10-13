@@ -13,14 +13,23 @@
 %
 
 
-% babel first, main language last
+% character protrusion (margin kerning); must precede babel, whose czech
+% module otherwise breaks microtype's patch for list items
+\RequirePackage{microtype}
+
+% babel next, main language last
 \RequirePackage[czech,main=english]{babel}
 
-% amsmath and mathtools must precede unicode-math
+% amsmath and mathtools must precede unicode-math; the two silenced warnings
+% only announce that unicode-math takes over mathtools' brackets and colons
 \RequirePackage{amsmath}
 \RequirePackage{mathtools}
 \RequirePackage{amsthm}
-\RequirePackage{unicode-math}
+% (one key per warning: the option parser splits a braced list at its comma)
+\RequirePackage[
+    warnings-off = mathtools-colon,
+    warnings-off = mathtools-overbracket,
+]{unicode-math}
 
 % integral limits above and below in display style (amsmath's intlimits
 % option is ignored by unicode-math); must precede \setmathfont
@@ -49,9 +58,6 @@
     BoldItalicFont = *-BoldOblique,
 ]
 \setmathfont{NewCMMath-Regular.otf}
-
-% character protrusion (margin kerning)
-\RequirePackage{microtype}
 
 % quotation marks: \enquote{...}
 \RequirePackage[autostyle]{csquotes}
@@ -106,8 +112,14 @@
     bookmarksnumbered=true,
 }
 
-% algorithms: algorithm float + algpseudocode (algorithmicx) environment
-\RequirePackage{algorithm}
+% algorithms: algorithm float + algpseudocode (algorithmicx) environment; the
+% float is defined here, as algorithm.sty does it, because algorithm.sty is
+% Latin-1 encoded and makes XeTeX warn about an invalid UTF-8 byte
+\floatstyle{ruled}
+\newfloat{algorithm}{tbp}{loa}
+\floatname{algorithm}{Algorithm}
+\floatstyle{plain}
+\newcommand*{\listofalgorithms}{\listof{algorithm}{List of Algorithms}}
 \RequirePackage{algpseudocode}
 
 % references with automatic names: \cref{thm:main} -> "Theorem 2.1"
@@ -147,14 +159,6 @@
 %
 % theorems
 %
-% All environments share one counter, numbered within chapters (or sections
-% in classes without chapters). Use the optional argument for a title and
-% \label inside the environment:
-%
-%   \begin{theorem}[Parseval]\label{thm:parseval} ... \end{theorem}
-%   \begin{proof} ... \end{proof}
-%   ... by \cref{thm:parseval} ...
-%
 
 
 \@ifundefined{c@chapter}
@@ -178,8 +182,16 @@
 
 \theoremstyle{plain}
 
-% proofs: \begin{proof} ... \end{proof} ends with an open square; put
-% \qedhere at the end of a final display to keep the square on its line
+% end-of-proof square on its own line, flush right (\fill outstretches the
+% \parfillskip), and kept on the same page as the last line of the proof;
+% \qedhere in a final display still puts it on the display's line
+\DeclareRobustCommand*{\qed}{%
+    \ifmmode
+        \mathqed
+    \else
+        \par\nobreak\noindent\hspace*{\fill}\qedsymbol
+    \fi
+}
 
 
 %
@@ -192,6 +204,9 @@
 \DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
 \DeclarePairedDelimiter{\norm}{\lVert}{\rVert}
 \DeclarePairedDelimiterX{\inner}[2]{\langle}{\rangle}{#1, #2}
+% open interval ]a, b[; typing ] and [ directly gives them closing and opening
+% spacing, which breaks e.g. the spacing of \times in ]0, a[ \times ]0, b[
+\DeclarePairedDelimiterX{\openint}[2]{\rbrack}{\lbrack}{#1, #2}
 
 % operators
 \DeclareMathOperator{\RE}{Re} % real part of...
@@ -255,7 +270,7 @@
 \newcommand*{\KZ}{\ensuremath{k_0}} % wave number
 
 % geometry, basis functions
-\newcommand*{\srcRegion}{\ensuremath{\symit{\Omega}}}
+\newcommand*{\srcRegion}{\ensuremath{\symit{\Gamma}}}
 \newcommand*{\basisFcn}{\ensuremath{\V{\psi}}}
 \newcommand*{\BFpol}{\ensuremath{\chi}}
 \newcommand*{\Ivec}{\ensuremath{\M{I}}}

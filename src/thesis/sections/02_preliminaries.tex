@@ -1,0 +1,20 @@
+\section{Preliminaries}
+\label{sec:preliminaries}
+
+The framework introduced here builds directly on the preceding bachelor's thesis~\cite{machacek2025method}. We first fix the class of geometries on which the derived solver operates. 
+
+\begin{definition}[Planar screen]
+\label{def:screen}
+Let $a, b > 0$. We call the set $\srcRegion \coloneqq \openint{0}{a} \times \openint{0}{b} \subset \R^2$, isometrically embedded in $\R^3$, the \emph{planar screen} with side lengths $a$ and $b$.
+\end{definition}
+
+The \ac{EFIE} operator~\cite{buffa2003electric} acts on fields over the screen. Studying these fields requires the theory of Sobolev spaces~\cite[Ch.~3]{mclean2000strongly}, in which they reside. This theory assumes that $\srcRegion$ has a Lipschitz boundary, that is, in suitable local coordinates, $\srcRegion$ is the region above the graph of a Lipschitz function~\cite[p.~89]{mclean2000strongly}. Under this assumption the trace theorem~\cite[Thm.~3.37]{mclean2000strongly} holds, so the boundary values of the fields on $\partial\srcRegion$ are well defined, which allows us to impose a boundary condition on the current at the edge of the screen.
+
+\begin{corollary}
+\label{cor:screen-lipschitz}
+The planar screen $\srcRegion$ has a Lipschitz boundary.
+\end{corollary}
+
+\begin{proof}
+As a product of open intervals, $\srcRegion$ is a bounded convex open set, and every bounded convex open set has a Lipschitz boundary~\cite[Cor.~1.2.2.3]{grisvard1985elliptic}.
+\end{proof}
