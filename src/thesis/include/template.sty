@@ -182,17 +182,6 @@
 
 \theoremstyle{plain}
 
-% end-of-proof square on its own line, flush right (\fill outstretches the
-% \parfillskip), and kept on the same page as the last line of the proof;
-% \qedhere in a final display still puts it on the display's line
-\DeclareRobustCommand*{\qed}{%
-    \ifmmode
-        \mathqed
-    \else
-        \par\nobreak\noindent\hspace*{\fill}\qedsymbol
-    \fi
-}
-
 
 %
 % math
